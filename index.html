@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiblioCafè - Menu Digitale</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+:root {
+    --primary-color: #0c4840;
+    --accent-color: #15705f;
+    --text-color: #2c3e50;
+    --light-bg: #f8f9fa;
+    --paper-color: #FFFFFF;
+    --gold: #1a8570;
+    --shadow: rgba(0, 0, 0, 0.1);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--light-bg);
+}
+
+header {
+    background: radial-gradient(circle at bottom center, var(--accent-color), var(--primary-color));
+    color: var(--paper-color);
+    padding: 2rem 1rem;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 2px 10px var(--shadow);
+}
+
+.header-logo {
+    max-width: 300px;
+    width: 100%;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+    animation: fadeIn 0.8s ease-out forwards;
+    opacity: 0;
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+.column-left, .column-right {
+    position: absolute;
+    top: -16.3%;  /* Estende l'immagine oltre il bordo superiore */
+    bottom: -17%; /* Estende l'immagine oltre il bordo inferiore */
+    height: 130%; /* Altezza aumentata al 140% */
+    width: 120px;
+    filter: brightness(0) invert(1);
+    object-fit: cover;
+    object-position: center;
+}
+
+.column-left {
+    left: -60px;
+    clip-path: inset(0 0 0 50%);
+}
+
+.column-right {
+    right: -60px;
+    clip-path: inset(0 50% 0 0);
+}
+
+nav {
+    background: var(--paper-color);
+    padding: 0.5rem;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.nav-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 0.5rem;
+}
+
+.nav-button {
+    padding: 0.5rem 0.8rem;
+    border: 1px solid var(--gold);
+    background: var(--primary-color);
+    color: var(--paper-color);
+    cursor: pointer;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    min-width: min-content;
+}
+
+.nav-button:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+}
+
+.nav-button:hover:before {
+    left: 100%;
+}
+
+.nav-button:hover {
+    transform: translateY(-1px);
+}
+
+.nav-button.active {
+    background: var(--accent-color);
+    transform: translateY(-1px);
+}
+
+.nav-button[data-category="colazione"]::after { content: " 🥐"; }
+.nav-button[data-category="snack"]::after { content: " 🥪"; }
+.nav-button[data-category="caffetteria"]::after { content: " ☕"; }
+.nav-button[data-category="aperitivi"]::after { content: " 🍹"; }
+.nav-button[data-category="cocktails"]::after { content: " 🍸"; }
+.nav-button[data-category="soft-drinks"]::after { content: " 🥤"; }
+
+main {
+    flex: 1;
+    padding: 2rem 1rem;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.category {
+    display: none;
+    background: var(--paper-color);
+    padding: 2rem;
+    margin: 0 auto;
+    max-width: 1000px;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px var(--shadow);
+}
+
+.category.active {
+    display: block;
+}
+
+.category-title {
+    color: var(--primary-color);
+    font-size: 1.75rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    text-align: center;
+}
+
+.menu-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+.item {
+    background: var(--paper-color);
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px var(--shadow);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.item-name {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--primary-color);
+    margin-bottom: 0.75rem;
+    padding-right: 1.5rem;
+    position: relative;
+}
+
+.item-name::after {
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 1.2rem;
+}
+
+#colazione .item-name::after { content: '🥐'; }
+#snack .item-name::after { content: '🥪'; }
+#caffetteria .item-name::after { content: '☕'; }
+#aperitivi .item-name::after { content: '🍹'; }
+#cocktails .item-name::after { content: '🍸'; }
+#soft-drinks .item-name::after { content: '🥤'; }
+
+.item-description {
+    color: var(--text-color);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    flex-grow: 1;
+    opacity: 0.8;
+}
+
+.item-price {
+    color: var(--accent-color);
+    font-weight: 600;
+    font-size: 1.1rem;
+    text-align: right;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--light-bg);
+}
+
+footer {
+    text-align: center;
+    padding: 1.5rem;
+    color: var(--paper-color);
+    background: var(--primary-color);
+    font-size: 0.9rem;
+}
+
+@media (max-width: 480px) {
+    .header-logo {
+        max-width: 220px;
+    }
+    
+    .nav-button {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.8rem;
+    }
+
+    main {
+        padding: 1rem;
+    }
+
+    .category {
+        padding: 1.5rem;
+    }
+
+    .category-title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (min-width: 768px) {
+    .header-logo {
+        max-width: 350px;
+    }
+
+    .category-title {
+        font-size: 2rem;
+    }
+}
+    </style>
+</head>
+<body>
+    <header>
+        <img src="./img/pillar.png" alt="" class="column-left">
+        <img src="./img/logo.png" alt="Il Tuo Bar Logo" class="header-logo">
+        <img src="./img/pillar.png" alt="" class="column-right">
+    </header>
+
+    <nav>
+        <div class="nav-container" id="nav-container">
+            <!-- I bottoni verranno generati dinamicamente -->
+        </div>
+    </nav>
+
+    <main id="main-content">
+        <!-- Le sezioni verranno generate dinamicamente -->
+    </main>
+
+    <footer>
+        <p>© 2024 BiblioCafè - Tutti i diritti riservati</p>
+    </footer>
+
+    <script src="menuData.js"></script>
+    <script src="menuGenerator.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            generateMenu('nav-container', 'main-content');
+        });
+    </script>
+</body>
+</html>
