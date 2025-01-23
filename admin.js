@@ -95,10 +95,16 @@ function loadCategories() {
     categoryListMobile.innerHTML = menuData.categories.map(category => `
         <button 
             onclick="filterProducts('${category.id}')" 
-            class="btn btn-primary">
+            class="nav-button">
             ${category.emoji} ${category.name}
         </button>
-    `).join('');
+    `).join('') + `
+        <button 
+            onclick="showMenuManagementPanel()" 
+            class="nav-button">
+            📋 Modifica Menu
+        </button>
+    `;
 
     // Aggiorna anche il select delle categorie nel form
     const categorySelect = document.getElementById('category');
@@ -143,7 +149,38 @@ function filterProducts(category) {
     loadProducts(category);
 }
 
+function showMenuManagementPanel() {
+    const menuManagementPanel = document.getElementById('menuManagementPanel');
+    const productTable = document.getElementById('productTable');
+    const productForm = document.getElementById('productForm');
+    
+    productTable.classList.add('hidden');
+    productForm.classList.add('hidden');
+    menuManagementPanel.classList.remove('hidden');
+    
+    menuManagementPanel.innerHTML = `
+        <div class="menu-management-options" style="display: flex; flex-direction: column; gap: 1rem;">
+            <h3 style="margin-bottom: 1rem;">Gestione Menu</h3>
+            <button onclick="showAddProductForm()" class="btn btn-primary" style="width: 100%;">
+                Aggiungi Prodotto
+            </button>
+            <button onclick="cancelMenuManagement()" class="btn btn-danger" style="width: 100%;">
+                Indietro
+            </button>
+        </div>
+    `;
+}
+
+function cancelMenuManagement() {
+    const menuManagementPanel = document.getElementById('menuManagementPanel');
+    const productTable = document.getElementById('productTable');
+    
+    menuManagementPanel.classList.add('hidden');
+    productTable.classList.remove('hidden');
+}
+
 function showAddProductForm() {
+    document.getElementById('menuManagementPanel').classList.add('hidden');
     document.getElementById('productForm').classList.remove('hidden');
     document.getElementById('productTable').classList.add('hidden');
     document.getElementById('productId').value = '';
