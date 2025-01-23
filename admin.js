@@ -90,7 +90,7 @@ function loadCategories() {
         </button>
     `).join('');
 
-    // Popola la barra delle categorie mobile
+    // Modify mobile categories bar
     const categoryListMobile = document.getElementById('categoryListMobile');
     categoryListMobile.innerHTML = menuData.categories.map(category => `
         <button 
