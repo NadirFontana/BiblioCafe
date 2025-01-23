@@ -79,7 +79,7 @@ function handleLogout() {
 
 // Category handling
 function loadCategories() {
-    // Sidebar categories
+    // Popola la sidebar delle categorie
     const categoryList = document.getElementById('categoryList');
     categoryList.innerHTML = menuData.categories.map(category => `
         <button 
@@ -88,16 +88,9 @@ function loadCategories() {
             style="width: 100%; margin-bottom: 0.5rem;">
             ${category.emoji} ${category.name}
         </button>
-    `).join('') + `
-        <button 
-            onclick="showMenuManagementPanel()" 
-            class="btn btn-primary" 
-            style="width: 100%; margin-top: 0.5rem;">
-            📋 Modifica Menu
-        </button>
-    `;
- 
-    // Mobile categories bar
+    `).join('');
+
+    // Modify mobile categories bar
     const categoryListMobile = document.getElementById('categoryListMobile');
     categoryListMobile.innerHTML = menuData.categories.map(category => `
         <button 
@@ -112,13 +105,13 @@ function loadCategories() {
             📋 Modifica Menu
         </button>
     `;
- 
-    // Category select in form
+
+    // Aggiorna anche il select delle categorie nel form
     const categorySelect = document.getElementById('category');
     categorySelect.innerHTML = menuData.categories.map(category => `
         <option value="${category.id}">${category.emoji} ${category.name}</option>
     `).join('');
- }
+}
 
 // Product handling
 function loadProducts(category = null) {
