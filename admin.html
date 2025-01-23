@@ -360,13 +360,10 @@ body {
     </style>
 </head>
 <body>
-    <!-- Importa il codice JavaScript dell'admin panel -->
     <script src="admin.js"></script>
 
-    <!-- Notifica -->
     <div id="notification" class="notification"></div>
 
-    <!-- Login Form -->
     <div id="loginForm">
         <h2 style="margin-bottom: 1.5rem;">Admin Login</h2>
         <form onsubmit="handleLogin(event)">
@@ -382,14 +379,12 @@ body {
         </form>
     </div>
 
-    <!-- Admin Panel -->
     <div id="adminPanel" class="hidden">
         <header class="admin-header">
             <h1>BiblioCafè Admin Panel</h1>
             <button onclick="handleLogout()" class="btn btn-danger">Logout</button>
         </header>
 
-        <!-- Categorie Mobile -->
         <div class="categories-mobile">
             <div class="categories-scroll" id="categoryListMobile">
                 <!-- Le categorie verranno inserite qui via JavaScript -->
@@ -401,15 +396,15 @@ body {
                 <aside class="sidebar">
                     <h3 style="margin-bottom: 1rem;">Categorie</h3>
                     <div id="categoryList"></div>
-                    <button onclick="showAddProductForm()" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">
-                        Aggiungi Prodotto
-                    </button>
                 </aside>
 
                 <main class="main-content">
                     <div id="productTable"></div>
                     
-                    <!-- Add/Edit Product Form -->
+                    <div id="menuManagementPanel" class="hidden" style="padding: 2rem; background: var(--paper-color); border-radius: 12px; box-shadow: 0 2px 15px var(--shadow);">
+                        <!-- This will be populated dynamically by JavaScript -->
+                    </div>
+                    
                     <div id="productForm" class="hidden">
                         <h3 style="margin-bottom: 1.5rem;">Aggiungi/Modifica Prodotto</h3>
                         <form onsubmit="handleProductSubmit(event)">
