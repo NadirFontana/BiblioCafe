@@ -240,19 +240,19 @@
                 console.log('Caricamento dati...'); // Debug
 
                 const [catResponse, prodResponse] = await Promise.all([
-                    fetch('/api/categories'),
-                    fetch('/api/products')
+                    fetch('./categories.js'),
+                    fetch('./products.js')
                 ]);
 
                 console.log('Risposta categorie:', catResponse.status); // Debug
                 console.log('Risposta prodotti:', prodResponse.status); // Debug
 
                 if (!catResponse.ok) {
-                    throw new Error(`Errore caricamento categorie: ${catResponse.status}`);
+                    throw new Error(`Errore caricamento categorie: ${catResponse.status} - ${catResponse.statusText}`);
                 }
 
                 if (!prodResponse.ok) {
-                    throw new Error(`Errore caricamento prodotti: ${prodResponse.status}`);
+                    throw new Error(`Errore caricamento prodotti: ${prodResponse.status} - ${prodResponse.statusText}`);
                 }
 
                 const catData = await catResponse.json();
@@ -335,7 +335,7 @@
 
         function renderProducts() {
             const filteredProducts = currentFilter
-                ? products.filter(p => p.category_id === currentFilter) // ✅ Cambiato da 'category' a 'category_id'
+                ? products.filter(p => p.category_id === currentFilter)
                 : products;
 
             const container = document.getElementById('productTable');
@@ -381,7 +381,7 @@
                 const product = products.find(p => p.id === productId);
                 if (product) {
                     document.getElementById('productId').value = product.id;
-                    document.getElementById('category').value = product.category_id; // ✅ Cambiato da 'category' a 'category_id'
+                    document.getElementById('category').value = product.category_id;
                     document.getElementById('name').value = product.name;
                     document.getElementById('description').value = product.description;
                     document.getElementById('price').value = product.price;
@@ -397,10 +397,11 @@
             const product = products.find(p => p.id === id);
             if (product) showProductForm(product.id);
         }
+
         async function deleteProduct(id) {
             if (confirm('Sei sicuro di voler eliminare questo prodotto?')) {
                 try {
-                    const response = await fetch(`/api/products?id=${id}`, {
+                    const response = await fetch(`./products.js?id=${id}`, {
                         method: 'DELETE'
                     });
 
@@ -427,7 +428,7 @@
             try {
                 const productId = document.getElementById('productId').value;
                 const productData = {
-                    category_id: document.getElementById('category').value, // ✅ Cambiato da 'category' a 'category_id'
+                    category_id: document.getElementById('category').value,
                     name: document.getElementById('name').value,
                     description: document.getElementById('description').value,
                     price: parseFloat(document.getElementById('price').value)
@@ -437,7 +438,7 @@
 
                 if (productId) {
                     // Modifica prodotto esistente
-                    const response = await fetch(`/api/products?id=${productId}`, {
+                    const response = await fetch(`./products.js?id=${productId}`, {
                         method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(productData)
@@ -452,7 +453,7 @@
                     showNotification('Prodotto modificato con successo');
                 } else {
                     // Aggiungi nuovo prodotto
-                    const response = await fetch('/api/products', {
+                    const response = await fetch('./products.js', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(productData)
@@ -522,6 +523,7 @@
                     showProducts();
                     return;
                 }
+                loadCategoryData();
             }
         }
 
@@ -552,26 +554,30 @@
                         showNotification('ID categoria già esistente');
                         return;
                     }
-                    const response = await fetch('/api/categories', {
+                    const response = await fetch('./categories.js', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(categoryData)
                     });
-                    if (!response.ok) throw new Error('Errore aggiunta categoria');
+                    
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.error || 'Errore aggiunta categoria');
                     showNotification('Categoria aggiunta');
 
                 } else if (mode === 'edit') {
-                    const response = await fetch('/api/categories', {
-                        method: 'POST',
+                    const response = await fetch('./categories.js', {
+                        method: 'PUT',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(categoryData)
                     });
-                    if (!response.ok) throw new Error('Errore modifica categoria');
+                    
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.error || 'Errore modifica categoria');
                     showNotification('Categoria modificata');
 
                 } else if (mode === 'delete') {
                     const categoryId = document.getElementById('originalCategoryId').value;
-                    const productsInCategory = products.filter(p => p.category === categoryId);
+                    const productsInCategory = products.filter(p => p.category_id === categoryId);
 
                     if (productsInCategory.length > 0) {
                         const confirmDelete = confirm(`Ci sono ${productsInCategory.length} prodotti in questa categoria. Eliminarla cancellerà anche tutti i prodotti. Continuare?`);
@@ -579,14 +585,16 @@
 
                         // Elimina prima i prodotti
                         for (const product of productsInCategory) {
-                            await fetch(`/api/products?id=${product.id}`, { method: 'DELETE' });
+                            await fetch(`./products.js?id=${product.id}`, { method: 'DELETE' });
                         }
                     }
 
-                    const response = await fetch(`/api/categories?id=${encodeURIComponent(categoryId)}`, {
+                    const response = await fetch(`./categories.js?id=${encodeURIComponent(categoryId)}`, {
                         method: 'DELETE'
                     });
-                    if (!response.ok) throw new Error('Errore eliminazione categoria');
+                    
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.error || 'Errore eliminazione categoria');
                     showNotification('Categoria eliminata');
                 }
 
@@ -594,6 +602,7 @@
                 renderCategories();
                 showCategoryManagement();
             } catch (error) {
+                console.error('Errore operazione categoria:', error);
                 showNotification('Errore: ' + error.message);
             }
         }
