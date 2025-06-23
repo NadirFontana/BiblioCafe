@@ -1,5 +1,5 @@
 // ==========================================
-// DATABASE MANAGER - VERCEL SIMPLIFIED
+// DATABASE MANAGER - CORREZIONI PER VERCEL
 // ==========================================
 
 class MenuDatabase {
@@ -12,23 +12,21 @@ class MenuDatabase {
     // Inizializza la connessione alle API
     async init() {
         try {
-            // Test della connessione
-            const response = await fetch(`${this.API_BASE}/health`);
+            // Test della connessione con health check semplificato
+            console.log('🔄 Inizializzazione database...');
             
-            if (!response.ok) {
-                throw new Error(`API non disponibile: ${response.status}`);
-            }
-
-            const data = await response.json();
-            console.log('✅ Connessione alle API stabilita:', data.message);
+            // Prova a caricare le categorie per testare la connessione
+            const categoriesTest = await this.getAllCategories();
+            const productsTest = await this.getAllProducts();
+            
+            console.log(`✅ Database inizializzato: ${categoriesTest.length} categorie, ${productsTest.length} prodotti`);
             
             this.initialized = true;
             return true;
 
         } catch (error) {
             console.error('❌ Errore inizializzazione API:', error);
-            // Non fare throw, continua comunque
-            this.initialized = true; // Permetti di continuare anche se health check fallisce
+            this.initialized = true; // Permetti di continuare comunque
             return false;
         }
     }
@@ -39,19 +37,53 @@ class MenuDatabase {
 
     async getAllCategories() {
         try {
-            const response = await fetch(`${this.API_BASE}/categories`);
+            console.log('📂 Recupero categorie...');
+            const response = await fetch(`${this.API_BASE}/categories`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                }
+            });
             
             if (!response.ok) {
-                throw new Error(`Errore recupero categorie: ${response.status}`);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
             const data = await response.json();
+            console.log('✅ Categorie caricate:', data.categories?.length || 0);
             return data.categories || [];
 
         } catch (error) {
-            console.error('Errore nel recupero delle categorie:', error);
-            // Ritorna dati di fallback
+            console.error('❌ Errore nel recupero delle categorie:', error);
+            showNotification?.('Errore caricamento categorie, uso dati di backup');
             return this.getFallbackCategories();
+        }
+    }
+
+    async createCategory(categoryData) {
+        try {
+            console.log('➕ Creazione categoria:', categoryData);
+            const response = await fetch(`${this.API_BASE}/categories`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(categoryData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('✅ Categoria creata:', result);
+            return result;
+
+        } catch (error) {
+            console.error('❌ Errore creazione categoria:', error);
+            throw error;
         }
     }
 
@@ -61,130 +93,216 @@ class MenuDatabase {
 
     async getAllProducts() {
         try {
-            const response = await fetch(`${this.API_BASE}/products`);
+            console.log('🛒 Recupero prodotti...');
+            const response = await fetch(`${this.API_BASE}/products`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Cache-Control': 'no-cache'
+                }
+            });
             
             if (!response.ok) {
-                throw new Error(`Errore recupero prodotti: ${response.status}`);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
             const data = await response.json();
+            console.log('✅ Prodotti caricati:', data.products?.length || 0);
             return data.products || [];
 
         } catch (error) {
-            console.error('Errore nel recupero dei prodotti:', error);
-            // Ritorna dati di fallback
+            console.error('❌ Errore nel recupero dei prodotti:', error);
+            showNotification?.('Errore caricamento prodotti, uso dati di backup');
             return this.getFallbackProducts();
         }
     }
 
     async getProductsByCategory(categoryId) {
         try {
-            const response = await fetch(`${this.API_BASE}/products?category=${encodeURIComponent(categoryId)}`);
+            console.log('🔍 Recupero prodotti per categoria:', categoryId);
+            const response = await fetch(`${this.API_BASE}/products?category=${encodeURIComponent(categoryId)}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
             
             if (!response.ok) {
-                throw new Error(`Errore recupero prodotti per categoria: ${response.status}`);
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
             }
 
             const data = await response.json();
+            console.log(`✅ Prodotti categoria ${categoryId}:`, data.products?.length || 0);
             return data.products || [];
 
         } catch (error) {
-            console.error('Errore nel recupero dei prodotti per categoria:', error);
-            // Ritorna dati di fallback filtrati
+            console.error('❌ Errore nel recupero dei prodotti per categoria:', error);
             const allProducts = this.getFallbackProducts();
-            return allProducts.filter(product => product.category === categoryId);
+            return allProducts.filter(product => product.category_id === categoryId);
+        }
+    }
+
+    async createProduct(productData) {
+        try {
+            console.log('➕ Creazione prodotto:', productData);
+            
+            // Validazione dati
+            if (!productData.category_id || !productData.name || !productData.description || productData.price == null) {
+                throw new Error('Dati prodotto incompleti');
+            }
+
+            const response = await fetch(`${this.API_BASE}/products`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(productData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('✅ Prodotto creato:', result);
+            return result;
+
+        } catch (error) {
+            console.error('❌ Errore creazione prodotto:', error);
+            throw error;
+        }
+    }
+
+    async updateProduct(productId, productData) {
+        try {
+            console.log('✏️ Aggiornamento prodotto:', productId, productData);
+            
+            const response = await fetch(`${this.API_BASE}/products?id=${productId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(productData)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('✅ Prodotto aggiornato:', result);
+            return result;
+
+        } catch (error) {
+            console.error('❌ Errore aggiornamento prodotto:', error);
+            throw error;
+        }
+    }
+
+    async deleteProduct(productId) {
+        try {
+            console.log('🗑️ Eliminazione prodotto:', productId);
+            
+            const response = await fetch(`${this.API_BASE}/products?id=${productId}`, {
+                method: 'DELETE'
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || `HTTP ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('✅ Prodotto eliminato:', result);
+            return result;
+
+        } catch (error) {
+            console.error('❌ Errore eliminazione prodotto:', error);
+            throw error;
         }
     }
 
     // ==========================================
-    // DATI DI FALLBACK (se le API non funzionano)
+    // DATI DI FALLBACK (aggiornati con category_id)
     // ==========================================
 
     getFallbackCategories() {
         return [
-            { id: 'caffe', name: 'Caffè e Bevande Calde', emoji: '☕' },
-            { id: 'bevande-fredde', name: 'Bevande Fredde', emoji: '🥤' },
-            { id: 'dolci', name: 'Dolci e Pasticceria', emoji: '🧁' },
-            { id: 'salati', name: 'Snack Salati', emoji: '🥪' },
-            { id: 'gelati', name: 'Gelati', emoji: '🍦' },
-            { id: 'cocktail', name: 'Cocktail', emoji: '🍹' }
+            { id: 'caffe', name: 'Caffè e Bevande Calde', emoji: '☕', order_index: 1 },
+            { id: 'bevande-fredde', name: 'Bevande Fredde', emoji: '🥤', order_index: 2 },
+            { id: 'dolci', name: 'Dolci e Pasticceria', emoji: '🧁', order_index: 3 },
+            { id: 'salati', name: 'Snack Salati', emoji: '🥪', order_index: 4 },
+            { id: 'gelati', name: 'Gelati', emoji: '🍦', order_index: 5 },
+            { id: 'cocktail', name: 'Cocktail', emoji: '🍹', order_index: 6 }
         ];
     }
 
     getFallbackProducts() {
         return [
             // Caffè e Bevande Calde
-            { id: 1, category: 'caffe', name: 'Espresso', description: 'Il nostro caffè signature, tostato artigianalmente', price: 1.20 },
-            { id: 2, category: 'caffe', name: 'Cappuccino', description: 'Espresso con schiuma di latte cremosa', price: 1.80 },
-            { id: 3, category: 'caffe', name: 'Caffè Americano', description: 'Espresso allungato con acqua calda', price: 1.50 },
-            { id: 4, category: 'caffe', name: 'Latte Macchiato', description: 'Latte caldo con un shot di espresso', price: 2.20 },
-            { id: 5, category: 'caffe', name: 'Cioccolata Calda', description: 'Cioccolato fondente con panna montata', price: 2.80 },
-            { id: 6, category: 'caffe', name: 'Tè Verde', description: 'Tè verde biologico selezionato', price: 2.00 },
+            { id: 1, category_id: 'caffe', name: 'Espresso', description: 'Il nostro caffè signature, tostato artigianalmente', price: 1.20, available: true, order_index: 1 },
+            { id: 2, category_id: 'caffe', name: 'Cappuccino', description: 'Espresso con schiuma di latte cremosa', price: 1.80, available: true, order_index: 2 },
+            { id: 3, category_id: 'caffe', name: 'Caffè Americano', description: 'Espresso allungato con acqua calda', price: 1.50, available: true, order_index: 3 },
+            { id: 4, category_id: 'caffe', name: 'Latte Macchiato', description: 'Latte caldo con un shot di espresso', price: 2.20, available: true, order_index: 4 },
+            { id: 5, category_id: 'caffe', name: 'Cioccolata Calda', description: 'Cioccolato fondente con panna montata', price: 2.80, available: true, order_index: 5 },
 
             // Bevande Fredde
-            { id: 7, category: 'bevande-fredde', name: 'Caffè Freddo', description: 'Espresso ghiacciato dolcificato', price: 2.00 },
-            { id: 8, category: 'bevande-fredde', name: 'Cappuccino Freddo', description: 'Cappuccino servito con ghiaccio', price: 2.50 },
-            { id: 9, category: 'bevande-fredde', name: 'Spremuta d\'Arancia', description: 'Arance fresche spremute al momento', price: 3.50 },
-            { id: 10, category: 'bevande-fredde', name: 'Limonata', description: 'Limoni freschi, acqua e zucchero di canna', price: 2.80 },
-            { id: 11, category: 'bevande-fredde', name: 'Tè Freddo Pesca', description: 'Tè nero aromatizzato alla pesca', price: 2.50 },
+            { id: 6, category_id: 'bevande-fredde', name: 'Caffè Freddo', description: 'Espresso ghiacciato dolcificato', price: 2.00, available: true, order_index: 1 },
+            { id: 7, category_id: 'bevande-fredde', name: 'Spremuta d\'Arancia', description: 'Arance fresche spremute al momento', price: 3.50, available: true, order_index: 2 },
+            { id: 8, category_id: 'bevande-fredde', name: 'Limonata', description: 'Limoni freschi, acqua e zucchero di canna', price: 2.80, available: true, order_index: 3 },
 
-            // Dolci e Pasticceria
-            { id: 12, category: 'dolci', name: 'Cornetto', description: 'Cornetto artigianale vuoto o con crema', price: 1.80 },
-            { id: 13, category: 'dolci', name: 'Maritozzo', description: 'Dolce romano con panna montata fresca', price: 3.20 },
-            { id: 14, category: 'dolci', name: 'Tiramisù', description: 'Il nostro tiramisù della casa', price: 4.50 },
-            { id: 15, category: 'dolci', name: 'Cannolo Siciliano', description: 'Cannolo con ricotta fresca e gocce di cioccolato', price: 3.80 },
+            // Dolci
+            { id: 9, category_id: 'dolci', name: 'Cornetto', description: 'Cornetto artigianale vuoto o con crema', price: 1.80, available: true, order_index: 1 },
+            { id: 10, category_id: 'dolci', name: 'Tiramisù', description: 'Il nostro tiramisù della casa', price: 4.50, available: true, order_index: 2 },
 
             // Snack Salati
-            { id: 16, category: 'salati', name: 'Toast Prosciutto e Formaggio', description: 'Toast con prosciutto cotto e fontina', price: 4.50 },
-            { id: 17, category: 'salati', name: 'Panino Caprese', description: 'Mozzarella, pomodoro, basilico e olio EVO', price: 5.20 },
-            { id: 18, category: 'salati', name: 'Focaccia Rosmarino', description: 'Focaccia calda con rosmarino e sale grosso', price: 2.80 },
-
-            // Gelati
-            { id: 19, category: 'gelati', name: 'Gelato Artigianale (2 gusti)', description: 'Scegli due gusti tra i nostri disponibili', price: 3.50 },
-            { id: 20, category: 'gelati', name: 'Coppa Gelato (3 gusti)', description: 'Tre gusti a scelta con panna e ciliegia', price: 4.80 },
-
-            // Cocktail
-            { id: 21, category: 'cocktail', name: 'Spritz Aperol', description: 'Aperol, Prosecco, soda e arancia', price: 6.50 },
-            { id: 22, category: 'cocktail', name: 'Negroni', description: 'Gin, Campari e Vermouth rosso', price: 8.00 },
-            { id: 23, category: 'cocktail', name: 'Mojito', description: 'Rum bianco, lime, menta e soda', price: 7.50 }
+            { id: 11, category_id: 'salati', name: 'Toast Prosciutto e Formaggio', description: 'Toast con prosciutto cotto e fontina', price: 4.50, available: true, order_index: 1 },
+            { id: 12, category_id: 'salati', name: 'Panino Caprese', description: 'Mozzarella, pomodoro, basilico e olio EVO', price: 5.20, available: true, order_index: 2 }
         ];
     }
 
     // ==========================================
-    // UTILITY
+    // UTILITY E DEBUG
     // ==========================================
 
     async getStats() {
         try {
-            const response = await fetch(`${this.API_BASE}/stats`);
-            
-            if (!response.ok) {
-                throw new Error(`Errore recupero statistiche: ${response.status}`);
-            }
+            const [categories, products] = await Promise.all([
+                this.getAllCategories(),
+                this.getAllProducts()
+            ]);
 
-            const data = await response.json();
             return {
-                categories: data.categories || 0,
-                products: data.products || 0,
+                categories: categories.length,
+                products: products.length,
                 connected: true,
                 timestamp: new Date().toISOString()
             };
 
         } catch (error) {
-            console.error('Errore nel recupero delle statistiche:', error);
+            console.error('❌ Errore nel recupero delle statistiche:', error);
             return {
                 categories: this.getFallbackCategories().length,
                 products: this.getFallbackProducts().length,
                 connected: false,
-                error: error.message
+                error: error.message,
+                timestamp: new Date().toISOString()
             };
         }
     }
 
-    // Metodo semplificato per il seeding (non necessario per il funzionamento base)
-    async seedDatabase() {
-        console.log('🌱 Seeding non necessario, dati già disponibili');
-        return { message: 'Dati già disponibili' };
+    // Test di connessione semplificato
+    async testConnection() {
+        try {
+            const stats = await this.getStats();
+            console.log('🔍 Test connessione:', stats);
+            return stats.connected;
+        } catch (error) {
+            console.error('❌ Test connessione fallito:', error);
+            return false;
+        }
     }
 }
 
@@ -194,4 +312,25 @@ const menuDB = new MenuDatabase();
 // Debug: esponi il database globalmente per i test
 if (typeof window !== 'undefined') {
     window.menuDB = menuDB;
+    
+    // Funzione di debug globale
+    window.debugDB = async () => {
+        console.log('🔍 DEBUG DATABASE');
+        console.log('Inizializzato:', menuDB.initialized);
+        
+        try {
+            const categories = await menuDB.getAllCategories();
+            const products = await menuDB.getAllProducts();
+            const stats = await menuDB.getStats();
+            
+            console.log('📊 Statistiche:', stats);
+            console.log('📂 Categorie:', categories);
+            console.log('🛒 Prodotti:', products);
+            
+            return { categories, products, stats };
+        } catch (error) {
+            console.error('❌ Errore debug:', error);
+            return { error: error.message };
+        }
+    };
 }
