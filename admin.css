@@ -1,0 +1,351 @@
+:root {
+    --primary-color: #0c4840;    
+    --accent-color: #15705f;     
+    --text-color: #083830;       
+    --light-bg: #f0f5f3;         
+    --paper-color: #FFFFFF;      
+    --gold: #1a8570;             
+    --danger: #dc3545;           
+    --shadow: rgba(0,0,0,0.1);   
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--light-bg);
+    min-height: 100vh;
+    width: 100vw;
+    overflow-x: hidden;
+}
+
+/* Header Styles */
+.admin-header {
+    background: var(--primary-color);
+    color: var(--paper-color);
+    padding: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    box-shadow: 0 2px 10px var(--shadow);
+    width: 100%;
+}
+
+/* Container Styles */
+.admin-container {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+.admin-grid {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 2rem;
+    padding: 2rem;
+    max-width: 100%;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    background: var(--paper-color);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px var(--shadow);
+    height: fit-content;
+}
+
+/* Navigation and Button Styles */
+.nav-container, .categories-scroll {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    width: 100%;
+    padding: 0.5rem;
+    background: var(--paper-color);
+    box-shadow: 0 2px 8px var(--shadow);
+    margin: 0;
+}
+
+.btn, .nav-button {
+    padding: 0.5rem 0.8rem;
+    border: 1px solid var(--gold);
+    background: var(--primary-color);
+    color: var(--paper-color);
+    cursor: pointer;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 25px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+    min-width: min-content;
+}
+
+.btn:hover, .nav-button:hover {
+    transform: translateY(-1px);
+    background: var(--accent-color);
+}
+
+.btn.active, .nav-button.active {
+    background: var(--accent-color);
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: var(--danger);
+    border-color: var(--danger);
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
+/* Category Icons */
+.btn[data-category="colazione"]::after { content: " 🥐"; }
+.btn[data-category="snack"]::after { content: " 🥪"; }
+.btn[data-category="caffetteria"]::after { content: " ☕"; }
+.btn[data-category="aperitivi"]::after { content: " 🍹"; }
+.btn[data-category="cocktails"]::after { content: " 🍸"; }
+.btn[data-category="soft-drinks"]::after { content: " 🥤"; }
+
+/* Main Content Styles */
+.main-content {
+    background: var(--paper-color);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px var(--shadow);
+    width: 100%;
+    overflow-x: auto;
+}
+
+/* Products Grid Styles */
+.products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    padding: 1rem;
+}
+
+.product-card {
+    background: var(--paper-color);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px var(--shadow);
+    padding: 1.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px var(--shadow);
+}
+
+.product-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.product-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.product-category {
+    font-size: 0.9rem;
+    color: var(--accent-color);
+    padding: 0.25rem 0.75rem;
+    background: var(--light-bg);
+    border-radius: 15px;
+    white-space: nowrap;
+}
+
+.product-description {
+    color: var(--text-color);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    flex-grow: 1;
+}
+
+.product-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
+.product-price {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--primary-color);
+}
+
+.product-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+/* Form Styles */
+#loginForm {
+    max-width: 400px;
+    margin: 4rem auto;
+    padding: 2rem;
+    background: var(--paper-color);
+    border-radius: 12px;
+    box-shadow: 0 2px 15px var(--shadow);
+}
+
+#productForm {
+    background: var(--paper-color);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px var(--shadow);
+    margin-top: 2rem;
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--light-bg);
+    border-radius: 8px;
+    font-family: 'Poppins', sans-serif;
+    transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+/* Utility Classes */
+.hidden {
+    display: none;
+}
+
+/* Notification Styles */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem;
+    border-radius: 8px;
+    background: var(--primary-color);
+    color: var(--paper-color);
+    display: none;
+    animation: slideIn 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 2px 10px var(--shadow);
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
+}
+
+/* Categories Mobile Styles */
+.categories-mobile {
+    position: sticky;
+    top: 56px;
+    z-index: 10;
+    background: var(--light-bg);
+    display: none;
+    width: 100%;
+}
+
+/* Media Queries */
+@media (max-width: 768px) {
+    .admin-container {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    }
+
+    .admin-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+        padding: 0;
+        width: 100%;
+    }
+
+    .sidebar {
+        display: none;
+    }
+
+    .main-content {
+        border-radius: 0;
+        padding: 1rem;
+        width: 100%;
+    }
+
+    .categories-mobile {
+        display: block;
+    }
+
+    .products-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
+        padding: 0.5rem;
+    }
+    
+    .product-card {
+        padding: 1rem;
+    }
+
+    .product-actions {
+        flex-direction: column;
+        gap: 0.3rem;
+    }
+
+    #loginForm {
+        margin: 2rem auto;
+        padding: 1.5rem;
+        width: 90%;
+    }
+
+    .admin-header h1 {
+        font-size: 1.2rem;
+    }
+
+    .btn, .nav-button {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.6rem;
+    }
+}
+
+@media (min-width: 769px) {
+    .admin-header h1 {
+        font-size: 1.8rem;
+    }
+
+    .btn, .nav-button {
+        font-size: 0.9rem;
+        padding: 0.8rem 1.2rem;
+    }
+}

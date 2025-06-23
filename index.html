@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BiblioCafè - Menu Digitale</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="page-wrapper">
+        <header>
+            <img src="./img/pillar.png" alt="" class="column-left">
+            <img src="./img/logo.png" alt="Il Tuo Bar Logo" class="header-logo">
+            <img src="./img/pillar.png" alt="" class="column-right">
+        </header>
+
+        <nav>
+            <div class="nav-container" id="nav-container">
+                <!-- I bottoni verranno generati dinamicamente dal database -->
+            </div>
+        </nav>
+
+        <main id="main-content">
+            <!-- Le sezioni verranno generate dinamicamente dal database -->
+        </main>
+    </div>
+
+    <footer>
+        <p>© 2024 BiblioCafè - Tutti i diritti riservati</p>
+    </footer>
+
+    <!-- Carica il database manager -->
+    <script src="db.js"></script>
+
+    <script>
+        // ==========================================
+        // FUNZIONI PER GENERARE IL MENU DAL DATABASE
+        // ==========================================
+
+        // FUNZIONE PER GENERARE IL MENU
+        async function generateMenu(containerId, mainContentId) {
+            try {
+                // Inizializza il database
+                await menuDB.init();
+                await menuDB.seedDatabase();
+
+                // Carica categorie e prodotti dal database
+                const categories = await menuDB.getAllCategories();
+                const products = await menuDB.getAllProducts();
+
+                if (categories.length === 0) {
+                    console.error('Nessuna categoria trovata nel database');
+                    return;
+                }
+
+                let currentCategoryIndex = 0;
+
+                // Genera la navigazione
+                const navContainer = document.getElementById(containerId);
+                navContainer.innerHTML = ''; // Pulisce il container
+                
+                categories.forEach(category => {
+                    const button = document.createElement('button');
+                    button.className = 'nav-button';
+                    button.setAttribute('data-category', category.id);
+                    button.textContent = category.name;
+                    navContainer.appendChild(button);
+                });
+
+                // Genera le sezioni del menu
+                const mainContent = document.getElementById(mainContentId);
+                mainContent.innerHTML = ''; // Pulisce il container
+
+                for (const category of categories) {
+                    const section = document.createElement('section');
+                    section.className = 'category';
+                    section.id = category.id;
+
+                    const title = document.createElement('h2');
+                    title.className = 'category-title';
+                    title.textContent = category.name;
+                    section.appendChild(title);
+
+                    const grid = document.createElement('div');
+                    grid.className = 'menu-grid';
+
+                    // Filtra i prodotti per categoria
+                    const categoryProducts = products.filter(product => 
+                        product.category === category.id
+                    );
+                    
+                    categoryProducts.forEach(product => {
+                        const item = document.createElement('div');
+                        item.className = 'item';
+                        item.innerHTML = `
+                            <div class="item-name">${product.name}</div>
+                            <div class="item-description">${product.description}</div>
+                            <div class="item-price">€${product.price.toFixed(2)}</div>
+                        `;
+                        grid.appendChild(item);
+                    });
+
+                    section.appendChild(grid);
+                    mainContent.appendChild(section);
+                }
+
+                // Funzione per cambiare categoria
+                function switchCategory(categoryId) {
+                    const currentCategory = document.querySelector('.category.active');
+                    const targetCategory = document.getElementById(categoryId);
+                    
+                    if (currentCategory === targetCategory) return;
+
+                    document.querySelectorAll('.category').forEach(cat => {
+                        if (cat !== targetCategory) {
+                            cat.style.display = 'none';
+                            cat.classList.remove('active');
+                        }
+                    });
+
+                    targetCategory.style.display = 'block';
+                    targetCategory.classList.add('active');
+                }
+
+                // Aggiungi event listeners ai bottoni
+                const buttons = document.querySelectorAll('.nav-button');
+                
+                buttons.forEach((button, index) => {
+                    button.addEventListener('click', () => {
+                        buttons.forEach(b => b.classList.remove('active'));
+                        button.classList.add('active');
+                        
+                        switchCategory(button.dataset.category);
+                        currentCategoryIndex = index;
+                    });
+                });
+
+                // Attiva la prima categoria
+                if (buttons.length > 0) {
+                    buttons[0].click();
+                }
+
+                console.log('Menu caricato con successo dal database');
+                console.log(`Categorie: ${categories.length}, Prodotti: ${products.length}`);
+
+            } catch (error) {
+                console.error('Errore nel caricamento del menu:', error);
+                
+                // Fallback: mostra messaggio di errore
+                const mainContent = document.getElementById(mainContentId);
+                mainContent.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        <h2>Errore nel caricamento del menu</h2>
+                        <p>Si prega di ricaricare la pagina</p>
+                    </div>
+                `;
+            }
+        }
+
+        // ==========================================
+        // AVVIO DELL'APPLICAZIONE
+        // ==========================================
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostra un messaggio di caricamento
+            const mainContent = document.getElementById('main-content');
+            mainContent.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #666;">
+                    <h2>Caricamento menu...</h2>
+                </div>
+            `;
+
+            // Carica il menu dal database
+            generateMenu('nav-container', 'main-content');
+        });
+    </script>
+</body>
+</html>
